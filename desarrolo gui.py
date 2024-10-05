@@ -1,68 +1,115 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, font
 
-# Funciones para manejar las tareas
-def add_task(event=None):
-    task = task_entry.get()
-    if task:
-        tasks_listbox.insert(tk.END, task)
-        task_entry.delete(0, tk.END)
-    else:
-        messagebox.showwarning("Entrada vacía", "Por favor, ingresa una tarea.")
+class TodoApp:
+    def __init__(self, root):
+        """Inicializa la ventana principal y los elementos gráficos."""
+        self.root = root
+        self.configurar_ventana()
 
-def complete_task(event=None):
-    try:
-        selected_task_index = tasks_listbox.curselection()[0]
-        task = tasks_listbox.get(selected_task_index)
-        tasks_listbox.delete(selected_task_index)
-        tasks_listbox.insert(tk.END, f"[COMPLETADA] {task}")
-    except IndexError:
-        messagebox.showwarning("Ninguna tarea seleccionada", "Por favor, selecciona una tarea para completar.")
+        # Crear subtítulo para explicar los atajos de teclado
+        self.crear_subtitulo()
 
-def delete_task(event=None):
-    try:
-        selected_task_index = tasks_listbox.curselection()[0]
-        tasks_listbox.delete(selected_task_index)
-    except IndexError:
-        messagebox.showwarning("Ninguna tarea seleccionada", "Por favor, selecciona una tarea para eliminar.")
+        # Crear el área de entrada y la lista de tareas
+        self.crear_area_entrada()
+        self.crear_lista_tareas()
 
-# Función para cerrar la aplicación
-def close_app(event=None):
-    root.quit()
+        # Crear botones y atajos
+        self.crear_botones()
+        self.crear_atajos_teclado()
 
-# Crear la ventana principal
-root = tk.Tk()
-root.title("Lista de Tareas Pendientes")
-root.geometry("400x300")
-root.configure(bg="#008000")  # Fondo de la ventana en verde
+    def configurar_ventana(self):
+        """Parámetros generales de la ventana."""
+        self.root.title("UEA_Registro de tareas")  # Título
+        self.root.geometry("500x550")
+        self.root.configure(bg="#2E8B57")  # Fondo verde
+        self.root.resizable(False, False)  
 
-# Campo de entrada para nuevas tareas
-task_entry = tk.Entry(root, width=35, bg="#d0f0c0", fg="black")
-task_entry.pack(pady=10)
-task_entry.bind("<Return>", add_task)  # Atajo para añadir tarea con Enter
+    def crear_subtitulo(self):
+        """Crea un subtítulo que explique los atajos de teclado."""
+        texto_subtitulo = (
+            "Atajos de teclado:\n"
+            "* Enter o I: Añadir tarea\n"
+            "* C: Completar tarea\n"
+            "* D: Eliminar tarea\n"
+            "* Escape: Cerrar aplicación"
+        )
+        subtitulo_label = tk.Label(
+            self.root, text=texto_subtitulo, bg="#2E8B57", fg="white", font=("Arial", 10, "italic")
+        )
+        subtitulo_label.pack(pady=10)
 
-# Lista de tareas
-tasks_listbox = tk.Listbox(root, width=50, height=10, bg="#d0f0c0", fg="black")
-tasks_listbox.pack(pady=10)
+    def crear_area_entrada(self):
+        """Crea el área de entrada para las nuevas tareas."""
+        fuente_personalizada = font.Font(family="Helvetica", size=12, weight="bold")
+        self.entrada_tarea = tk.Entry(self.root, width=45, font=fuente_personalizada, bg="#F0FFF0", fg="#333333")
+        self.entrada_tarea.pack(pady=15)
 
-# Botones para añadir, completar y eliminar tareas
-buttons_frame = tk.Frame(root, bg="#008000")  # Fondo del frame en verde
-buttons_frame.pack(pady=10)
+    def crear_lista_tareas(self):
+        """Crea la lista donde se mostrarán las tareas."""
+        self.lista_tareas = tk.Listbox(self.root, height=10, width=45, font=("Courier", 12), bg="#D3E4CD", fg="#333333")
+        self.lista_tareas.pack(pady=10)
 
-add_button = tk.Button(buttons_frame, text="Añadir tarea", command=add_task, bg="#32CD32", fg="white")
-add_button.pack(side=tk.LEFT, padx=10)
+    def crear_botones(self):
+        """Crea los botones con funcionalidades avanzadas."""
+        marco_botones = tk.Frame(self.root, bg="#2E8B57")
+        marco_botones.pack(pady=10)
 
-complete_button = tk.Button(buttons_frame, text="Marcar como completada", command=complete_task, bg="#32CD32", fg="white")
-complete_button.pack(side=tk.LEFT, padx=10)
+        self.boton_añadir = self.crear_boton(marco_botones, "Añadir Tarea", self.añadir_tarea, "#66CDAA", "#000000")
+        self.boton_completar = self.crear_boton(marco_botones, "Completar Tarea", self.completar_tarea, "#66CDAA", "#000000")
+        self.boton_eliminar = self.crear_boton(marco_botones, "Eliminar Tarea", self.eliminar_tarea, "#66CDAA", "#000000")
 
-delete_button = tk.Button(buttons_frame, text="Eliminar tarea", command=delete_task, bg="#32CD32", fg="white")
-delete_button.pack(side=tk.LEFT, padx=10)
+    def crear_boton(self, parent, text, command, bg, fg):
+        """Función para crear botones con un estilo común."""
+        boton = tk.Button(parent, text=text, command=command, width=15, bg=bg, fg=fg, font=("Arial", 10, "bold"))
+        boton.pack(side=tk.LEFT, padx=5)
+        return boton
 
-# Atajos de teclado
-root.bind("<Escape>", close_app)          # Atajo para cerrar la aplicación con Escape
-root.bind("<c>", complete_task)           # Atajo para marcar como completada con "C"
-root.bind("<d>", delete_task)             # Atajo para eliminar con "D"
-root.bind("<Control-n>", add_task)        # Atajo para añadir una tarea con Ctrl + N
+    def crear_atajos_teclado(self):
+        """Asigna atajos de teclado para acciones comunes."""
+        self.root.bind("<Return>", lambda event: self.añadir_tarea())  # Añadir tarea con Enter
+        self.root.bind("<i>", lambda event: self.añadir_tarea())       # Atajo personalizado "I" para añadir
+        self.root.bind("<c>", lambda event: self.completar_tarea())  # Completar tarea con "C"
+        self.root.bind("<d>", lambda event: self.eliminar_tarea())    # Eliminar tarea con "D"
+        self.root.bind("<Escape>", lambda event: self.cerrar_aplicacion())  # Cerrar con Escape
 
-# Ejecutar la aplicación
-root.mainloop()
+    def añadir_tarea(self):
+        """Añade una tarea a la lista si el campo de entrada no está vacío."""
+        tarea = self.entrada_tarea.get().strip()  # Limpia espacios innecesarios
+        if tarea:
+            self.lista_tareas.insert(tk.END, tarea)
+            self.entrada_tarea.delete(0, tk.END)  # Borra el campo de entrada después de añadir
+        else:
+            self.mostrar_mensaje("Campo vacío", "¡Por favor, ingresa una tarea!")
+
+    def completar_tarea(self):
+        """Marca la tarea seleccionada como completada."""
+        try:
+            tarea_seleccionada = self.lista_tareas.curselection()[0]
+            tarea = self.lista_tareas.get(tarea_seleccionada)
+            self.lista_tareas.delete(tarea_seleccionada)
+            self.lista_tareas.insert(tk.END, f"[COMPLETADA] {tarea}")
+        except IndexError:
+            self.mostrar_mensaje("Sin selección", "¡Por favor, selecciona una tarea para completar!")
+
+    def eliminar_tarea(self):
+        """Elimina la tarea seleccionada."""
+        try:
+            tarea_seleccionada = self.lista_tareas.curselection()[0]
+            self.lista_tareas.delete(tarea_seleccionada)
+        except IndexError:
+            self.mostrar_mensaje("Sin selección", "¡Por favor, selecciona una tarea para eliminar!")
+
+    def cerrar_aplicacion(self):
+        """Cierra la aplicación."""
+        self.root.quit()
+
+    def mostrar_mensaje(self, titulo, mensaje):
+        """Muestra un mensaje de advertencia."""
+        messagebox.showwarning(titulo, mensaje)
+
+# Crear la ventana principal y lanzar la aplicación
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TodoApp(root)
+    root.mainloop()
