@@ -29,9 +29,9 @@ class TodoApp:
         """Crea un subtítulo que explique los atajos de teclado."""
         texto_subtitulo = (
             "Atajos de teclado:\n"
-            "* Enter o I: Añadir tarea\n"
-            "* C: Completar tarea\n"
-            "* D: Eliminar tarea\n"
+            "* Enter o CRL+I: Añadir tarea\n"
+            "* CRL+C: Completar tarea\n"
+            "* CRL+D: Eliminar tarea\n"
             "* Escape: Cerrar aplicación"
         )
         subtitulo_label = tk.Label(
